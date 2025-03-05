@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 import navis as nav
 import json
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +16,7 @@ app.add_middleware(
 )
 
 @app.get("/neurons")
-def get_neurons():
+def get_neurons(limit: int = 100):  # 添加 limit 参数进行分页
     neurons = nav.example_neurons()
-    neuron_data = [{"x": node.x, "y": node.y, "z": node.z} for neuron in neurons for node in neuron.nodes.itertuples()]
-    return json.dumps(neuron_data)
+    neuron_data = [{"x": node.x, "y": node.y, "z": node.z} for neuron in neurons[:limit] for node in neuron.nodes.itertuples()]
+    return JSONResponse(content=neuron_data)
