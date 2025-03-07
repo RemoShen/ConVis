@@ -1,6 +1,6 @@
 # ConVis
 
 ## To run the front-end: 
- - cd frontend
+ - cd convisviewer
  - npm install
  - npm start
