@@ -4,7 +4,7 @@ import { linkage } from './neuron_linkage.js';
 
 const nodes = {};
 const positions = {};
-const leafSpacing = 1.5;
+const leafSpacing = 3.0;
 
 // 初始化叶子节点
 const leafIds = Object.keys(labels).map(Number);

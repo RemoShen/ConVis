@@ -10,7 +10,7 @@ export function createMainScene() {
   // ==================== INITIALIZE ====================
   // SCNENE
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0x000000);
   // CAMERA
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
   camera.position.set(0, 0, 100);
