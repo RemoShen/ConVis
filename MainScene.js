@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { levels } from "./neuron_levels.js";
 import { neuronMeta } from "./neuron_meta.js";
 import { sharedState } from "./shared_state.js";
+import { storeOriginalNodes, updateNeuronSimplification, resetNeuronSimplification, neuronSimplificationState } from "./neuron_simplification.js";
 
 export function createMainScene() {
   const pageStartTime = performance.now();
@@ -164,6 +165,10 @@ export function createMainScene() {
         const res = await fetch(filePath);
         const file = await res.blob();
         const nodes = await loadSWCFile(file);
+        
+        // 存储原始节点数据用于简化
+        storeOriginalNodes(filePath, nodes);
+        
         const colorScheme = colorSchemes[i % colorSchemes.length];
         const model = createSWCModel(nodes, colorScheme);
         model.visible = false;
@@ -229,7 +234,25 @@ export function createMainScene() {
       visibleSet = new Set(levelList); // show whole level
     }
     for (const [filePath, model] of allModelMap.entries()) {
-      model.visible = visibleSet.has(filePath);
+      // 检查是否有简化模型正在显示
+      const isSimplified = neuronSimplificationState.currentSimplificationLevel.has(filePath);
+      
+      if (visibleSet.has(filePath)) {
+        if (!isSimplified) {
+          model.visible = true;
+        }
+      } else {
+        model.visible = false;
+        // 如果有简化模型，也需要隐藏
+        if (isSimplified) {
+          const simplificationLevel = neuronSimplificationState.currentSimplificationLevel.get(filePath);
+          const cacheKey = `${filePath}_${simplificationLevel}`;
+          const simplifiedModel = neuronSimplificationState.simplifiedModels.get(cacheKey);
+          if (simplifiedModel) {
+            simplifiedModel.visible = false;
+          }
+        }
+      }
     }
   }
 
@@ -256,6 +279,13 @@ export function createMainScene() {
     slider.value = "1";
     label.textContent = "1";
     sharedState.hoveredSubtree = null;
+    
+    // 重置所有神经元简化
+    for (const filePath of allModelMap.keys()) {
+      if (neuronSimplificationState.currentSimplificationLevel.has(filePath)) {
+        resetNeuronSimplification(filePath, allModelMap, scene);
+      }
+    }
   });
 
   // === SLIDER ===
@@ -336,6 +366,15 @@ export function createMainScene() {
   const mouse = new THREE.Vector2();
   const infoPanel = document.getElementById("neuron-info");
   const infoText = document.getElementById("neuron-name");
+  const simplificationContainer = document.getElementById("simplification-container");
+  const simplificationSlider = document.getElementById("neuron-simplification-slider");
+  const simplificationValue = document.getElementById("simplification-value");
+  const resetSimplificationButton = document.getElementById("reset-simplification");
+  const applySimplificationButton = document.getElementById("apply-simplification");
+  
+  // 当前选中的神经元文件路径
+  let selectedNeuronPath = null;
+  
   window.addEventListener("pointerdown", (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -349,21 +388,39 @@ export function createMainScene() {
         });
       }
     }
+    
+    // 也检查简化模型
+    for (const model of neuronSimplificationState.simplifiedModels.values()) {
+      if (model.visible) {
+        model.traverse((child) => {
+          if (child.isMesh) visibleMeshes.push(child);
+        });
+      }
+    }
 
     const intersects = raycaster.intersectObjects(visibleMeshes, false);
     if (intersects.length > 0) {
       const mesh = intersects[0].object;
 
-      // ⬇ 关键：向上查找带 userData.filePath 的 Group
+      // 向上查找带 userData.filePath 的 Group
       let neuronModel = mesh;
       while (neuronModel && (!neuronModel.userData || !neuronModel.userData.filePath)) {
         neuronModel = neuronModel.parent;
       }
 
       if (neuronModel && neuronModel.userData.filePath) {
-        const filename = neuronModel.userData.filePath.split("/").pop(); // 取出 A.swc
+        const filePath = neuronModel.userData.filePath;
+        const filename = filePath.split("/").pop(); // 取出 A.swc
         const neuronId = filename.replace(".swc", ""); // 取出 A
         const info = neuronMap.get(neuronId);
+        
+        // 更新当前选中的神经元
+        selectedNeuronPath = filePath;
+        
+        // 更新简化滑块的值
+        const currentSimplificationLevel = neuronSimplificationState.currentSimplificationLevel.get(filePath) || 100;
+        simplificationSlider.value = currentSimplificationLevel;
+        simplificationValue.textContent = currentSimplificationLevel;
 
         if (info) {
           infoText.innerHTML = `
@@ -379,13 +436,39 @@ export function createMainScene() {
             <strong>Nerve:</strong> ${info.nerve}
           `;
           infoPanel.style.display = "block";
+          simplificationContainer.style.display = "block";
         } else {
           infoText.textContent = `Neuron ${neuronId} not found.`;
           infoPanel.style.display = "block";
+          simplificationContainer.style.display = "block";
         }
       }
     } else {
       infoPanel.style.display = "none";
+      selectedNeuronPath = null;
+    }
+  });
+
+  // 简化滑块事件
+  simplificationSlider.addEventListener("input", () => {
+    const value = parseInt(simplificationSlider.value);
+    simplificationValue.textContent = value;
+  });
+  
+  // 应用简化按钮
+  applySimplificationButton.addEventListener("click", () => {
+    if (selectedNeuronPath) {
+      const simplificationLevel = parseInt(simplificationSlider.value);
+      updateNeuronSimplification(selectedNeuronPath, simplificationLevel, allModelMap, scene, colorSchemes);
+    }
+  });
+  
+  // 重置简化按钮
+  resetSimplificationButton.addEventListener("click", () => {
+    if (selectedNeuronPath) {
+      resetNeuronSimplification(selectedNeuronPath, allModelMap, scene);
+      simplificationSlider.value = 100;
+      simplificationValue.textContent = 100;
     }
   });
 
@@ -407,6 +490,16 @@ export function createMainScene() {
         });
       }
     }
+    
+    // 也检查简化模型
+    for (const model of neuronSimplificationState.simplifiedModels.values()) {
+      if (model.visible) {
+        model.traverse((child) => {
+          if (child.isMesh) visibleMeshes.push(child);
+        });
+      }
+    }
+    
     const intersects = raycaster.intersectObjects(visibleMeshes, false);
 
     if (intersects.length > 0) {
@@ -427,7 +520,29 @@ export function createMainScene() {
           });
         }
         originalMaterials.clear();
+        
+        // 处理原始模型
         for (const [filePath, model] of allModelMap.entries()) {
+          if (model.visible && model !== neuron) {
+            const mats = { line: null, point: null };
+            model.traverse((child) => {
+              if (child.isMesh) {
+                if (child.geometry.type === "TubeGeometry") {
+                  mats.line = child.material;
+                  child.material = grayLineMaterial;
+                } else if (child.geometry.type === "SphereGeometry") {
+                  mats.point = child.material;
+                  child.material = grayPointMaterial;
+                }
+              }
+            });
+
+            originalMaterials.set(model, mats);
+          }
+        }
+        
+        // 处理简化模型
+        for (const [cacheKey, model] of neuronSimplificationState.simplifiedModels.entries()) {
           if (model.visible && model !== neuron) {
             const mats = { line: null, point: null };
             model.traverse((child) => {

@@ -32,6 +32,30 @@
       .button:hover {
         background: rgba(255, 255, 255, 0.2);
       }
+      /* 神经元简化滑块样式 */
+      .simplification-slider-container {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .simplification-slider-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .simplification-slider {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+      .simplification-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+      }
+      .simplification-controls button {
+        font-size: 12px;
+        padding: 3px 8px;
+      }
     </style>
   </head>
   <body>
@@ -52,6 +76,16 @@
 
     <div id="neuron-info" style="position: fixed; top: 20px; right: 20px; padding: 10px 14px; background: rgba(255, 255, 255, 0.1); color: white; font-family: sans-serif; border-radius: 8px; display: none; z-index: 100; max-width: 300px">
       <div id="neuron-name">-</div>
+      
+      <!-- 神经元简化滑块控件 -->
+      <div id="simplification-container" class="simplification-slider-container">
+        <label for="neuron-simplification-slider">Simplification: <span id="simplification-value">100</span>%</label>
+        <input type="range" id="neuron-simplification-slider" class="simplification-slider" min="0" max="100" value="100" />
+        <div class="simplification-controls">
+          <button id="reset-simplification" class="button">Reset</button>
+          <button id="apply-simplification" class="button">Apply</button>
+        </div>
+      </div>
     </div>
 
     <script>
