@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 /**
  * 神经元简化算法与滚动条控制
  * 基于neuron_mst的分支持久性算法实现
