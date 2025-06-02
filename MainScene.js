@@ -288,11 +288,12 @@ export function createMainScene() {
     }
     
     // 重置固定面板
-    document.getElementById("selected-neuron-id").textContent = "None";
-    document.getElementById("no-neuron-selected").style.display = "block";
-    document.getElementById("fixed-simplification-container").style.display = "none";
-    document.getElementById("fixed-simplification-slider").value = 100;
-    document.getElementById("fixed-simplification-value").textContent = "100";
+    selectedNeuronPath = null;
+    selectedNeuronId.textContent = "None";
+    noNeuronSelected.style.display = "block";
+    fixedSimplificationContainer.style.display = "none";
+    fixedSimplificationSlider.value = 100;
+    fixedSimplificationValue.textContent = "100";
   });
 
   // === SLIDER ===
@@ -382,11 +383,32 @@ export function createMainScene() {
   const fixedSimplificationValue = document.getElementById("fixed-simplification-value");
   const fixedResetSimplificationButton = document.getElementById("fixed-reset-simplification");
   const fixedApplySimplificationButton = document.getElementById("fixed-apply-simplification");
+  const closeSimplificationPanelButton = document.getElementById("close-simplification-panel");
   
   // 当前选中的神经元文件路径
   let selectedNeuronPath = null;
   
+  // 关闭按钮事件
+  closeSimplificationPanelButton.addEventListener("click", () => {
+    selectedNeuronPath = null;
+    selectedNeuronId.textContent = "None";
+    noNeuronSelected.style.display = "block";
+    fixedSimplificationContainer.style.display = "none";
+  });
+  
   window.addEventListener("pointerdown", (event) => {
+    // 检查是否点击在简化面板内部，如果是则不处理
+    const simplificationPanel = document.getElementById("fixed-simplification-panel");
+    const rect = simplificationPanel.getBoundingClientRect();
+    if (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    ) {
+      return; // 点击在面板内部，不处理
+    }
+    
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
@@ -458,13 +480,8 @@ export function createMainScene() {
         }
       }
     } else {
+      // 点击空白区域，只隐藏信息面板，不影响简化控件
       infoPanel.style.display = "none";
-      selectedNeuronPath = null;
-      
-      // 更新固定面板，显示无选中状态
-      selectedNeuronId.textContent = "None";
-      noNeuronSelected.style.display = "block";
-      fixedSimplificationContainer.style.display = "none";
     }
   });
 
@@ -496,6 +513,18 @@ export function createMainScene() {
   let hoveredNeuron = null;
   let originalMaterials = new Map(); // key: model, value: { line, point }
   window.addEventListener("pointermove", (event) => {
+    // 检查是否在简化面板内移动，如果是则不处理
+    const simplificationPanel = document.getElementById("fixed-simplification-panel");
+    const rect = simplificationPanel.getBoundingClientRect();
+    if (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    ) {
+      return; // 在面板内部移动，不处理
+    }
+    
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
