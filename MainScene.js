@@ -286,6 +286,13 @@ export function createMainScene() {
         resetNeuronSimplification(filePath, allModelMap, scene);
       }
     }
+    
+    // 重置固定面板
+    document.getElementById("selected-neuron-id").textContent = "None";
+    document.getElementById("no-neuron-selected").style.display = "block";
+    document.getElementById("fixed-simplification-container").style.display = "none";
+    document.getElementById("fixed-simplification-slider").value = 100;
+    document.getElementById("fixed-simplification-value").textContent = "100";
   });
 
   // === SLIDER ===
@@ -366,11 +373,15 @@ export function createMainScene() {
   const mouse = new THREE.Vector2();
   const infoPanel = document.getElementById("neuron-info");
   const infoText = document.getElementById("neuron-name");
-  const simplificationContainer = document.getElementById("simplification-container");
-  const simplificationSlider = document.getElementById("neuron-simplification-slider");
-  const simplificationValue = document.getElementById("simplification-value");
-  const resetSimplificationButton = document.getElementById("reset-simplification");
-  const applySimplificationButton = document.getElementById("apply-simplification");
+  
+  // 固定位置简化面板元素
+  const selectedNeuronId = document.getElementById("selected-neuron-id");
+  const noNeuronSelected = document.getElementById("no-neuron-selected");
+  const fixedSimplificationContainer = document.getElementById("fixed-simplification-container");
+  const fixedSimplificationSlider = document.getElementById("fixed-simplification-slider");
+  const fixedSimplificationValue = document.getElementById("fixed-simplification-value");
+  const fixedResetSimplificationButton = document.getElementById("fixed-reset-simplification");
+  const fixedApplySimplificationButton = document.getElementById("fixed-apply-simplification");
   
   // 当前选中的神经元文件路径
   let selectedNeuronPath = null;
@@ -417,10 +428,15 @@ export function createMainScene() {
         // 更新当前选中的神经元
         selectedNeuronPath = filePath;
         
+        // 更新固定面板中的神经元信息
+        selectedNeuronId.textContent = neuronId;
+        noNeuronSelected.style.display = "none";
+        fixedSimplificationContainer.style.display = "block";
+        
         // 更新简化滑块的值
         const currentSimplificationLevel = neuronSimplificationState.currentSimplificationLevel.get(filePath) || 100;
-        simplificationSlider.value = currentSimplificationLevel;
-        simplificationValue.textContent = currentSimplificationLevel;
+        fixedSimplificationSlider.value = currentSimplificationLevel;
+        fixedSimplificationValue.textContent = currentSimplificationLevel;
 
         if (info) {
           infoText.innerHTML = `
@@ -436,39 +452,42 @@ export function createMainScene() {
             <strong>Nerve:</strong> ${info.nerve}
           `;
           infoPanel.style.display = "block";
-          simplificationContainer.style.display = "block";
         } else {
           infoText.textContent = `Neuron ${neuronId} not found.`;
           infoPanel.style.display = "block";
-          simplificationContainer.style.display = "block";
         }
       }
     } else {
       infoPanel.style.display = "none";
       selectedNeuronPath = null;
+      
+      // 更新固定面板，显示无选中状态
+      selectedNeuronId.textContent = "None";
+      noNeuronSelected.style.display = "block";
+      fixedSimplificationContainer.style.display = "none";
     }
   });
 
-  // 简化滑块事件
-  simplificationSlider.addEventListener("input", () => {
-    const value = parseInt(simplificationSlider.value);
-    simplificationValue.textContent = value;
+  // 固定面板简化滑块事件
+  fixedSimplificationSlider.addEventListener("input", () => {
+    const value = parseInt(fixedSimplificationSlider.value);
+    fixedSimplificationValue.textContent = value;
   });
   
-  // 应用简化按钮
-  applySimplificationButton.addEventListener("click", () => {
+  // 固定面板应用简化按钮
+  fixedApplySimplificationButton.addEventListener("click", () => {
     if (selectedNeuronPath) {
-      const simplificationLevel = parseInt(simplificationSlider.value);
+      const simplificationLevel = parseInt(fixedSimplificationSlider.value);
       updateNeuronSimplification(selectedNeuronPath, simplificationLevel, allModelMap, scene, colorSchemes);
     }
   });
   
-  // 重置简化按钮
-  resetSimplificationButton.addEventListener("click", () => {
+  // 固定面板重置简化按钮
+  fixedResetSimplificationButton.addEventListener("click", () => {
     if (selectedNeuronPath) {
       resetNeuronSimplification(selectedNeuronPath, allModelMap, scene);
-      simplificationSlider.value = 100;
-      simplificationValue.textContent = 100;
+      fixedSimplificationSlider.value = 100;
+      fixedSimplificationValue.textContent = 100;
     }
   });
 

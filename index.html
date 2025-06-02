@@ -32,26 +32,80 @@
       .button:hover {
         background: rgba(255, 255, 255, 0.2);
       }
-      /* 神经元简化滑块样式 */
-      .simplification-slider-container {
-        margin-top: 15px;
-        padding-top: 10px;
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      
+      /* 固定位置的神经元简化控制面板样式 */
+      #fixed-simplification-panel {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        width: 250px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 15px;
+        color: white;
+        font-family: sans-serif;
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       }
+      
+      #fixed-simplification-panel .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      #fixed-simplification-panel .panel-title {
+        font-weight: bold;
+        font-size: 16px;
+      }
+      
+      #fixed-simplification-panel .panel-content {
+        margin-bottom: 15px;
+      }
+      
+      #fixed-simplification-panel .neuron-info {
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #aaa;
+      }
+      
+      #fixed-simplification-panel .neuron-id {
+        color: #fff;
+        font-weight: bold;
+      }
+      
+      #fixed-simplification-panel .no-selection {
+        color: #888;
+        font-style: italic;
+        text-align: center;
+        padding: 10px 0;
+      }
+      
+      .simplification-slider-container {
+        margin-top: 10px;
+      }
+      
       .simplification-slider-container label {
         display: block;
         margin-bottom: 5px;
         font-size: 14px;
       }
+      
       .simplification-slider {
         width: 100%;
         margin-bottom: 5px;
       }
+      
       .simplification-controls {
         display: flex;
         justify-content: space-between;
-        margin-top: 5px;
+        margin-top: 10px;
       }
+      
       .simplification-controls button {
         font-size: 12px;
         padding: 3px 8px;
@@ -74,18 +128,31 @@
       <input type="range" id="level-slider" />
     </div>
 
-    <div id="neuron-info" style="position: fixed; top: 20px; right: 20px; padding: 10px 14px; background: rgba(255, 255, 255, 0.1); color: white; font-family: sans-serif; border-radius: 8px; display: none; z-index: 100; max-width: 300px">
-      <div id="neuron-name">-</div>
-      
-      <!-- 神经元简化滑块控件 -->
-      <div id="simplification-container" class="simplification-slider-container">
-        <label for="neuron-simplification-slider">Simplification: <span id="simplification-value">100</span>%</label>
-        <input type="range" id="neuron-simplification-slider" class="simplification-slider" min="0" max="100" value="100" />
-        <div class="simplification-controls">
-          <button id="reset-simplification" class="button">Reset</button>
-          <button id="apply-simplification" class="button">Apply</button>
+    <!-- 固定位置的神经元简化控制面板 -->
+    <div id="fixed-simplification-panel">
+      <div class="panel-header">
+        <div class="panel-title">Neuron Simplification</div>
+      </div>
+      <div class="panel-content">
+        <div id="selected-neuron-info" class="neuron-info">
+          Selected: <span id="selected-neuron-id" class="neuron-id">None</span>
+        </div>
+        <div id="no-neuron-selected" class="no-selection">
+          Click on a neuron to select it
+        </div>
+        <div id="fixed-simplification-container" class="simplification-slider-container" style="display: none;">
+          <label for="fixed-simplification-slider">Simplification: <span id="fixed-simplification-value">100</span>%</label>
+          <input type="range" id="fixed-simplification-slider" class="simplification-slider" min="0" max="100" value="100" />
+          <div class="simplification-controls">
+            <button id="fixed-reset-simplification" class="button">Reset</button>
+            <button id="fixed-apply-simplification" class="button">Apply</button>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div id="neuron-info" style="position: fixed; top: 20px; right: 290px; padding: 10px 14px; background: rgba(255, 255, 255, 0.1); color: white; font-family: sans-serif; border-radius: 8px; display: none; z-index: 100; max-width: 300px">
+      <div id="neuron-name">-</div>
     </div>
 
     <script>
