@@ -8,6 +8,7 @@
 #### Dataset
 
 zarr version = 3  
+先解压 zip 再 run  
 public 里有 dataste_360.zarr, 每个 neuron 存进一个 array 里  
 如果要看所有 neuron 存进一个大 array 参见 branch 0605-1  
 
