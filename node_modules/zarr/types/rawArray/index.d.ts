@@ -1,0 +1,14 @@
+/// <reference types="node" />
+import { DtypeString } from '../types';
+import { ArraySelection } from '../core/types';
+import { TypedArray } from '../nestedArray/types';
+export declare class RawArray {
+    dtype: DtypeString;
+    shape: number[];
+    strides: number[];
+    data: TypedArray;
+    constructor(data: TypedArray, shape?: number | number[], dtype?: DtypeString, strides?: number[]);
+    constructor(data: Buffer | ArrayBufferLike | null, shape?: number | number[], dtype?: DtypeString, strides?: number[]);
+    set(selection: ArraySelection, value: RawArray | number): void;
+    set(selection: ArraySelection, chunk: RawArray, chunkSelection: ArraySelection): void;
+}

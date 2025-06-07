@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fly Connectome Visualization</title>
+    <style>
+      body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+      }
+      canvas.inset-canvas {
+        /* border: 2px solid #999; */
+        border-radius: 8px;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+        transition: opacity 0.3s ease;
+      }
+      .hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .button {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-family: sans-serif;
+        transition: all 0.3s ease;
+      }
+      .button:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="/main.js"></script>
+
+    <!-- 加载指示器 -->
+    <div id="loading-indicator" style="display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); padding: 6px 12px; border-radius: 6px; font-family: sans-serif; z-index: 999; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2)">⏳ Loading neurons...</div>
+
+    <button id="toggle-hover-filter" class="button" style="position: fixed; top: 20px; left: 20px; z-index: 200">Reset Cluster</button>
+
+    <button id="reset-view" class="button" style="position: fixed; top: 60px; left: 20px; z-index: 200">Reset View</button>
+
+    <button id="toggle-dendrogram" class="button" style="position: fixed; top: 100px; left: 20px; z-index: 200">Toggle Dendrogram</button>
+
+    <div id="loading-time" style="position: fixed; bottom: 10px; width: 100%; text-align: center; color: #fff; font-family: monospace"></div>
+
+    <div id="level-slider-container" style="position: fixed; right: 20px; bottom: 20px; z-index: 10; background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; color: white; font-family: sans-serif">
+      <label for="level-slider">Level: <span id="level-value">1</span></label>
+      <input type="range" id="level-slider" />
+    </div>
+
+    <div id="neuron-info" style="position: fixed; top: 20px; right: 20px; padding: 10px 14px; background: rgba(255, 255, 255, 0.1); color: white; font-family: sans-serif; border-radius: 8px; display: none; z-index: 100; max-width: 300px">
+      <div id="neuron-name">-</div>
+    </div>
+
+    <script>
+      // 添加层次聚类树显示/隐藏控制
+      document.getElementById("toggle-dendrogram").addEventListener("click", function () {
+        const dendrogramCanvas = document.querySelector(".inset-canvas");
+        dendrogramCanvas.classList.toggle("hidden");
+      });
+    </script>
+  </body>
+</html>

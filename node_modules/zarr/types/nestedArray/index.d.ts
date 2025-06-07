@@ -1,0 +1,33 @@
+/// <reference types="node" />
+import { DtypeString } from '../types';
+import { NestedArrayData, TypedArray, TypedArrayConstructor } from './types';
+import { ArraySelection, Slice } from '../core/types';
+export declare class NestedArray<T extends TypedArray> {
+    dtype: DtypeString;
+    shape: number[];
+    data: NestedArrayData;
+    constructor(data: TypedArray, shape?: number | number[], dtype?: DtypeString);
+    constructor(data: Buffer | ArrayBufferLike | NestedArrayData | null, shape: number | number[], dtype: DtypeString);
+    get(selection: Slice | ":" | "..." | null | (Slice | null | ":" | "...")[]): NestedArray<T>;
+    get(selection: ArraySelection): NestedArray<T> | number;
+    set(selection: ArraySelection | undefined, value: NestedArray<T> | number): void;
+    flatten(): T;
+    /**
+     * Currently only supports a single integer as the size, TODO: support start, stop, step.
+     */
+    static arange(size: number, dtype?: DtypeString): NestedArray<TypedArray>;
+}
+/**
+ * Creates a TypedArray with values 0 through N where N is the product of the shape.
+ */
+export declare function rangeTypedArray<T extends TypedArray>(shape: number[], tContructor: TypedArrayConstructor<T>): T;
+/**
+ * Creates multi-dimensional (rank > 1) array given input data and shape recursively.
+ * What it does is create a Array<Array<...<Array<Uint8Array>>> or some other typed array.
+ * This is for internal use, there should be no need to call this from user code.
+ * @param data a buffer containing the data for this array.
+ * @param t constructor for the datatype of choice
+ * @param shape list of numbers describing the size in each dimension
+ * @param offset in bytes for this dimension
+ */
+export declare function createNestedArray<T extends TypedArray>(data: Buffer | ArrayBuffer, t: TypedArrayConstructor<T>, shape: number[], offset?: number): NestedArrayData;
