@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { dendrogram } from "./neuron_dendrogram.js";
+import { dendrogram } from "./neuron_dendrogram.js"; // 左下角的cluster tree
 import { sharedState } from "./shared_state.js";
 
 export function createInsetScene() {
@@ -22,12 +22,13 @@ export function createInsetScene() {
   const ambientLight = new THREE.AmbientLight(0xffffff, 2);
   scene.add(ambientLight);
   // Materials & Geometry
-  const lineMaterial = new THREE.LineBasicMaterial({ 
+  const lineMaterial = new THREE.LineBasicMaterial({
     color: 0x808080,
-    linewidth: 2
+    linewidth: 2,
   });
   const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0xa0a0a0 });
-  const sphereGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+  // const sphereGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+  const sphereGeometry = new THREE.SphereGeometry(5, 16, 16);
 
   // ==================== RENDER CLUSTER TREE ====================
   // Tree Bounding Box Calculation
@@ -108,9 +109,10 @@ export function createInsetScene() {
         const end = new THREE.Vector3(child.x, node.y, 0);
         const direction = end.clone().sub(start);
         const length = direction.length();
-        
+
         const curve = new THREE.LineCurve3(start, end);
-        const tubeGeometry = new THREE.TubeGeometry(curve, 1, 0.3, 8, false);
+        // const tubeGeometry = new THREE.TubeGeometry(curve, 1, 0.3, 8, false);
+        const tubeGeometry = new THREE.TubeGeometry(curve, 1, 1, 8, false);
         const tube = new THREE.Mesh(tubeGeometry, lineMaterial);
         scene.add(tube);
 
@@ -121,9 +123,10 @@ export function createInsetScene() {
         const xs = node.children.map((c) => c.x).sort((a, b) => a - b);
         const start = new THREE.Vector3(xs[0], node.y, 0);
         const end = new THREE.Vector3(xs[xs.length - 1], node.y, 0);
-        
+
         const curve = new THREE.LineCurve3(start, end);
-        const tubeGeometry = new THREE.TubeGeometry(curve, 1, 0.3, 8, false);
+        // const tubeGeometry = new THREE.TubeGeometry(curve, 1, 0.3, 8, false);
+        const tubeGeometry = new THREE.TubeGeometry(curve, 1, 1, 8, false);
         const tube = new THREE.Mesh(tubeGeometry, lineMaterial);
         scene.add(tube);
       }
@@ -146,15 +149,15 @@ export function createInsetScene() {
   });
 
   // === Zoom ===
-  const minZoom = 0.5;  // 最小缩放倍数
-  const maxZoom = 2.0;  // 最大缩放倍数
+  const minZoom = 0.5; // 最小缩放倍数
+  const maxZoom = 2.0; // 最大缩放倍数
   let currentZoom = 1.0;
 
   renderer.domElement.addEventListener("wheel", (event) => {
     event.preventDefault();
     const zoomSpeed = 1.1;
     const zoomIn = event.deltaY < 0;
-    
+
     if (zoomIn && currentZoom < maxZoom) {
       currentZoom *= zoomSpeed;
       const scale = 1 / zoomSpeed;
@@ -178,11 +181,11 @@ export function createInsetScene() {
     isDragging = true;
     lastX = e.clientX;
   });
-  
+
   renderer.domElement.addEventListener("mouseup", () => {
     isDragging = false;
   });
-  
+
   renderer.domElement.addEventListener("mouseleave", () => {
     isDragging = false;
   });
@@ -192,7 +195,7 @@ export function createInsetScene() {
     if (isDragging) {
       const moveFactor = 4;
       const dx = ((moveFactor * (e.clientX - lastX)) / window.innerWidth) * (camera.right - camera.left);
-      
+
       camera.left -= dx;
       camera.right -= dx;
       camera.updateProjectionMatrix();
